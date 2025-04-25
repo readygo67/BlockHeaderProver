@@ -7,6 +7,7 @@ import (
 	native_plonk "github.com/consensys/gnark/backend/plonk"
 	"github.com/consensys/gnark/backend/witness"
 	"github.com/consensys/gnark/std/algebra/emulated/sw_bn254"
+	"github.com/consensys/gnark/test/unsafekzg"
 	"github.com/lightec-xyz/common/operations"
 	"github.com/readygo67/BlockHeaderProver/circuits"
 	"github.com/readygo67/BlockHeaderProver/utils"
@@ -25,6 +26,7 @@ var (
 	recursiveCcsFile = "../testdata/block_header_recursive.ccs"
 	recursivePkFile  = "../testdata/block_header_recursive.pk"
 	recursiveVkFile  = "../testdata/block_header_recursive.vk"
+	toxicValue       = []byte{05, 06, 07} //seed for srs
 )
 
 func main() {
@@ -57,12 +59,13 @@ func setupUnit() error {
 		return err
 	}
 	fmt.Printf("nbConstraints:%v, nbPublicWitness:%v, nbSecretWitness:%v, nbInternalVariables:%v\n", ccs.GetNbConstraints(), ccs.GetNbPublicVariables(), ccs.GetNbSecretVariables(), ccs.GetNbInternalVariables())
-	srs, lsrs, err := operations.ReadSrs(ccs.GetNbConstraints()+ccs.GetNbPublicVariables(), "../srs")
+
+	srs, lsrs, err := unsafekzg.NewSRS(ccs, unsafekzg.WithToxicSeed(toxicValue))
 	if err != nil {
 		return err
 	}
 
-	pk, vk, err := operations.PlonkSetup(ccs, srs, lsrs)
+	pk, vk, err := operations.PlonkSetup(ccs, &srs, &lsrs)
 	if err != nil {
 		return err
 	}
@@ -114,14 +117,14 @@ func setupRecursive() error {
 	if err != nil {
 		return err
 	}
-
 	fmt.Printf("nbConstraints:%v, nbPublicWitness:%v, nbSecretWitness:%v, nbInternalVariables:%v\n", ccs.GetNbConstraints(), ccs.GetNbPublicVariables(), ccs.GetNbSecretVariables(), ccs.GetNbInternalVariables())
-	srs, lsrs, err := operations.ReadSrs(ccs.GetNbConstraints()+ccs.GetNbPublicVariables(), "../srs")
+
+	srs, lsrs, err := unsafekzg.NewSRS(ccs, unsafekzg.WithToxicSeed(toxicValue))
 	if err != nil {
 		return err
 	}
 
-	pk, vk, err := operations.PlonkSetup(ccs, srs, lsrs)
+	pk, vk, err := operations.PlonkSetup(ccs, &srs, &lsrs)
 	if err != nil {
 		return err
 	}
