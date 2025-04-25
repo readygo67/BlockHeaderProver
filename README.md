@@ -13,3 +13,6 @@ cd cmd
 go build
 ./cmd 
 ```
+
+## Implementation on SP1
+https://github.com/readygo67/BlockHeaderProver-SP1
